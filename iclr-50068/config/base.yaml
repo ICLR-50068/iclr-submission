@@ -1,0 +1,72 @@
+defaults:
+  - _self_
+  - datamodule: default
+  - optimizer: adam
+  - data_split: full_split
+  - transforms: rotation_augmentation
+  - optional experiment: cycloformer_3p53m
+
+data_location: ~/emg2pose_data
+metadata_file: ${data_location}/metadata.csv
+
+seed: 42
+batch_size: 64
+num_workers: 8
+
+num_train_sessions: null
+stride: null
+random_sampled_windows: false
+windows_per_session: null
+
+train: True
+eval: True
+checkpoint: null
+
+monitor_metric: val_mae
+monitor_mode: min
+
+loss_weights:
+  mae: 1
+  fingertip_distance: 0.01
+
+emg_dropout: 0.0
+pre_tds_mask_prob: 0.0
+rotation: 0
+
+trainer:
+  max_epochs: 100
+  accelerator: auto
+  devices: auto
+  strategy: auto
+
+lr_scheduler: null
+
+callbacks:
+  - _target_: pytorch_lightning.callbacks.LearningRateMonitor
+  - _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    monitor: ${monitor_metric}
+    mode: ${monitor_mode}
+    save_last: True
+    verbose: True
+  - _target_: pytorch_lightning.callbacks.EarlyStopping
+    monitor: ${monitor_metric}
+    mode: ${monitor_mode}
+    patience: 1000
+    check_on_train_epoch_end: False
+    verbose: True
+  - _target_: emg2pose.metric_logger_callback.EpochMetricsLogger
+    filename: epoch_metrics.csv
+
+hydra:
+  run:
+    dir: logs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    dir: ${hydra.run.dir}
+    subdir: ${hydra.job.num}_${hydra.job.override_dirname}/seed=${seed}
+  output_subdir: hydra_configs
+  job:
+    name: cycloformer
+    config:
+      override_dirname:
+        exclude_keys:
+          - seed

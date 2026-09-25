@@ -1,0 +1,11 @@
+# @package _global_
+datamodule:
+  _target_: emg2pose.lightning.WindowedEmgDataModule
+  window_length: 10000
+  val_test_window_length: 10000
+  padding: [0, 0]
+  skip_ik_failures: True
+  stride: null
+  num_train_sessions: null
+  random_sampled_windows: false
+  windows_per_session: 10

@@ -1,0 +1,6 @@
+Training and evaluation infrastructure, the HDF5 dataset loader, and
+UmeTrack forward kinematics are derived from the emg2pose release
+(Meta, CC-BY-NC-SA 4.0). See LICENSE.
+
+The CycloFormer network (emg2pose/cs_tds_ct_arch.py) and the three
+Table-1 40x configurations are the contribution of this work.

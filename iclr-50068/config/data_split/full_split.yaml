@@ -1,0 +1,3 @@
+_target_: emg2pose.utils.load_splits
+metadata_file: ${metadata_file}
+subsample: 1

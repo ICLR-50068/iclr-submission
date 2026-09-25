@@ -1,0 +1,68 @@
+# @package _global_
+defaults:
+  - /pose_module: pose
+  - /network: cycloformer_6p80m
+  - _self_
+
+# 6.80M. Effective batch 192 (32 x 6). No LR warmup.
+
+data_location: ~/emg2pose_data
+provide_initial_pos: False
+
+optimizer:
+  _target_: torch.optim.AdamW
+  lr: 3.0e-4
+  weight_decay: 1.0e-4
+
+loss_weights:
+  mae: 1
+  fingertip_distance: 0.01
+  landmark_distance: 0.0
+
+datamodule:
+  window_length: 10000
+  val_test_window_length: 10000
+  padding: [0, 0]
+  skip_ik_failures: true
+  stride: null
+  num_train_sessions: null
+  random_sampled_windows: false
+  windows_per_session: 10
+
+batch_size: 32
+
+trainer:
+  gradient_clip_val: 1.0
+  max_epochs: 100
+  accumulate_grad_batches: 6
+
+lr_scheduler:
+  scheduler:
+    _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+    T_max: 100
+    eta_min: 5.0e-6
+    verbose: true
+  interval: epoch
+  monitor: ${monitor_metric}
+
+monitor_metric: val_mae
+monitor_mode: min
+
+callbacks:
+  - _target_: pytorch_lightning.callbacks.LearningRateMonitor
+  - _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    monitor: ${monitor_metric}
+    mode: ${monitor_mode}
+    save_last: true
+    save_top_k: 1
+    verbose: true
+  - _target_: pytorch_lightning.callbacks.EarlyStopping
+    monitor: ${monitor_metric}
+    mode: ${monitor_mode}
+    patience: 100
+    verbose: true
+  - _target_: emg2pose.metric_logger_callback.EpochMetricsLogger
+    filename: epoch_metrics_cycloformer.csv
+  - _target_: pytorch_lightning.callbacks.StochasticWeightAveraging
+    swa_lrs: 1.0e-7
+    swa_epoch_start: 0.85

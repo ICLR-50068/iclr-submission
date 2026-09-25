@@ -1,0 +1,32 @@
+_target_: emg2pose.cs_tds_ct_arch.create_cs_tds_ct
+
+# 3.53M, 40x stem. Table 1.
+
+input_channels: 16
+output_dim: 20
+
+cnn_channels: [32, 64, 128, 128]
+cnn_kernels: [11, 5, 5, 3]
+cnn_strides: [5, 2, 2, 2]
+n_residual_blocks: 2
+use_cs_tds: true
+use_log_compression: true
+
+d_model: 224
+n_spatial_blocks: 3
+n_temporal_blocks: 3
+n_heads: 8
+d_ff: 512
+dropout: 0.15
+
+use_attention_pooling: true
+
+channel_rotation_range: 3
+channel_drop_p: 0.2
+channel_mix_strength: 0.1
+amplitude_jitter_std: 0.08
+chunk_mask_ratio: 0.05
+
+use_gradient_reversal: false
+num_stages: 1
+stage_reversal_lambda: 0.1
